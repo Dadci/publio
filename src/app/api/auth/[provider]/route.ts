@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FacebookOAuth } from '@/lib/auth/oauth-manager';
 
-const providers = {
+const providers: Record<string, any> = {
     facebook: new FacebookOAuth(),
     // Add other providers here
 };

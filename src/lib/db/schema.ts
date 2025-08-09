@@ -74,3 +74,19 @@ export const mediaFiles = pgTable('media_files', {
     order: integer('order').default(0), // for carousel posts
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// Type exports for TypeScript
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+
+export type SocialAccount = typeof socialAccounts.$inferSelect;
+export type NewSocialAccount = typeof socialAccounts.$inferInsert;
+
+export type Post = typeof posts.$inferSelect;
+export type NewPost = typeof posts.$inferInsert;
+
+export type PostDestination = typeof postDestinations.$inferSelect;
+export type NewPostDestination = typeof postDestinations.$inferInsert;
+
+export type MediaFile = typeof mediaFiles.$inferSelect;
+export type NewMediaFile = typeof mediaFiles.$inferInsert;
