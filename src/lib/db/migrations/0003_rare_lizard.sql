@@ -1,0 +1,2 @@
+CREATE INDEX "idx_posts_user_scheduled" ON "posts" USING btree ("user_id","scheduled_at");--> statement-breakpoint
+CREATE INDEX "idx_social_accounts_user_platform" ON "social_accounts" USING btree ("user_id","platform");

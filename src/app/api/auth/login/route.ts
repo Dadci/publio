@@ -5,13 +5,19 @@ import { eq } from 'drizzle-orm';
 import { loginSchema } from '@/lib/auth/validation';
 import { verifyPassword } from '@/lib/auth/encryption';
 import { signJWT } from '@/lib/auth/jwt';
+import { logAuditEvent, getClientInfo, AuditActions, AuditResources } from '@/lib/auth/audit-logger';
 
 export async function POST(request: NextRequest) {
+    const clientInfo = getClientInfo(request);
+    let userId: number | undefined;
+    let email: string | undefined;
+
     try {
         const body = await request.json();
 
         // Validate request body
         const validatedData = loginSchema.parse(body);
+        email = validatedData.email;
 
         // Find user by email
         const user = await db
@@ -21,6 +27,16 @@ export async function POST(request: NextRequest) {
             .limit(1);
 
         if (user.length === 0) {
+            // Log failed login attempt
+            logAuditEvent({
+                action: AuditActions.LOGIN_FAILED,
+                resource: AuditResources.AUTH,
+                details: { email, reason: 'user_not_found' },
+                success: false,
+                errorMessage: 'User not found',
+                ...clientInfo,
+            });
+
             return NextResponse.json(
                 { error: 'Invalid credentials' },
                 { status: 401 }
@@ -28,6 +44,7 @@ export async function POST(request: NextRequest) {
         }
 
         const userData = user[0];
+        userId = userData.id;
 
         // Verify password
         const isValidPassword = await verifyPassword(
@@ -36,6 +53,17 @@ export async function POST(request: NextRequest) {
         );
 
         if (!isValidPassword) {
+            // Log failed login attempt
+            logAuditEvent({
+                userId,
+                action: AuditActions.LOGIN_FAILED,
+                resource: AuditResources.AUTH,
+                details: { email, reason: 'invalid_password' },
+                success: false,
+                errorMessage: 'Invalid password',
+                ...clientInfo,
+            });
+
             return NextResponse.json(
                 { error: 'Invalid credentials' },
                 { status: 401 }
@@ -48,6 +76,16 @@ export async function POST(request: NextRequest) {
             email: userData.email,
             name: userData.name,
             role: userData.role,
+        });
+
+        // Log successful login
+        logAuditEvent({
+            userId,
+            action: AuditActions.LOGIN_SUCCESS,
+            resource: AuditResources.AUTH,
+            details: { email, userAgent: clientInfo.userAgent },
+            success: true,
+            ...clientInfo,
         });
 
         // Set secure cookie
@@ -72,6 +110,17 @@ export async function POST(request: NextRequest) {
         return response;
     } catch (error) {
         console.error('Login error:', error);
+
+        // Log system error
+        logAuditEvent({
+            userId,
+            action: AuditActions.LOGIN_FAILED,
+            resource: AuditResources.AUTH,
+            details: { email, reason: 'system_error' },
+            success: false,
+            errorMessage: error instanceof Error ? error.message : 'Unknown error',
+            ...clientInfo,
+        });
 
         if (error instanceof Error && error.name === 'ZodError') {
             return NextResponse.json(

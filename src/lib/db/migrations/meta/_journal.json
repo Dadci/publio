@@ -22,6 +22,20 @@
       "when": 1754816194668,
       "tag": "0002_bored_violations",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1754823829554,
+      "tag": "0003_rare_lizard",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1754826406296,
+      "tag": "0004_harsh_jocasta",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyJWT } from './src/lib/auth/jwt';
+import {
+    loginRateLimiter,
+    apiRateLimiter,
+    uploadRateLimiter,
+    getRateLimitIdentifier,
+    createRateLimitResponse
+} from './src/lib/auth/rate-limiter';
 
 // Routes that don't require authentication
 const publicRoutes = [
@@ -17,13 +24,39 @@ const adminRoutes = [
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // Skip middleware for static files and public routes
+    // Skip middleware for static files
     if (
         pathname.startsWith('/_next') ||
         pathname.startsWith('/favicon.ico') ||
-        pathname.includes('.') ||
-        publicRoutes.includes(pathname)
+        (pathname.includes('.') && !pathname.startsWith('/api/'))
     ) {
+        return NextResponse.next();
+    }
+
+    // Apply rate limiting to API routes
+    if (pathname.startsWith('/api/')) {
+        const identifier = getRateLimitIdentifier(request);
+
+        if (pathname === '/api/auth/login' || pathname === '/api/auth/register') {
+            const rateLimitResult = loginRateLimiter.isAllowed(identifier);
+            if (!rateLimitResult.allowed) {
+                return createRateLimitResponse(rateLimitResult.resetTime, identifier);
+            }
+        } else if (pathname.startsWith('/api/upload/')) {
+            const rateLimitResult = uploadRateLimiter.isAllowed(identifier);
+            if (!rateLimitResult.allowed) {
+                return createRateLimitResponse(rateLimitResult.resetTime, identifier);
+            }
+        } else if (pathname.startsWith('/api/')) {
+            const rateLimitResult = apiRateLimiter.isAllowed(identifier);
+            if (!rateLimitResult.allowed) {
+                return createRateLimitResponse(rateLimitResult.resetTime, identifier);
+            }
+        }
+    }
+
+    // Skip auth for public routes
+    if (publicRoutes.includes(pathname)) {
         return NextResponse.next();
     }
 

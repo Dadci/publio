@@ -1,6 +1,6 @@
 // src/lib/db/schema.ts
 
-import { pgTable, serial, text, timestamp, varchar, boolean, jsonb, integer, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, varchar, boolean, jsonb, integer, pgEnum, index } from 'drizzle-orm/pg-core';
 
 // First, define your enums for platform types and post statuses
 export const platformEnum = pgEnum('platform', ['facebook', 'instagram', 'tiktok']);
@@ -33,6 +33,10 @@ export const socialAccounts = pgTable('social_accounts', {
     metadata: jsonb('metadata'), // Store platform-specific data
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+    return {
+        userPlatformIdx: index('idx_social_accounts_user_platform').on(table.userId, table.platform),
+    };
 });
 
 // Transform your posts table to handle multi-platform scheduling
@@ -46,6 +50,10 @@ export const posts = pgTable('posts', {
     publishedAt: timestamp('published_at'), // When actually published
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+    return {
+        userScheduledIdx: index('idx_posts_user_scheduled').on(table.userId, table.scheduledAt),
+    };
 });
 
 // Junction table for many-to-many relationship (one post can go to multiple accounts)
@@ -77,6 +85,21 @@ export const mediaFiles = pgTable('media_files', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Table for audit logging
+export const auditLogs = pgTable('audit_logs', {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id').references(() => users.id),
+    action: varchar('action', { length: 100 }).notNull(),
+    resource: varchar('resource', { length: 100 }).notNull(),
+    resourceId: varchar('resource_id', { length: 100 }),
+    details: jsonb('details'),
+    ipAddress: varchar('ip_address', { length: 45 }),
+    userAgent: text('user_agent'),
+    timestamp: timestamp('timestamp').defaultNow().notNull(),
+    success: boolean('success').notNull(),
+    errorMessage: text('error_message'),
+});
+
 // Type exports for TypeScript
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -92,3 +115,6 @@ export type NewPostDestination = typeof postDestinations.$inferInsert;
 
 export type MediaFile = typeof mediaFiles.$inferSelect;
 export type NewMediaFile = typeof mediaFiles.$inferInsert;
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type NewAuditLog = typeof auditLogs.$inferInsert;

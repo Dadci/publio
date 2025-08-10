@@ -10,9 +10,10 @@ const providers: Record<string, any> = {
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { provider: string } }
+    { params }: { params: Promise<{ provider: string }> }
 ) {
-    const provider = providers[params.provider];
+    const { provider: providerName } = await params;
+    const provider = providers[providerName];
 
     if (!provider) {
         return NextResponse.json({ error: 'Invalid provider' }, { status: 400 });

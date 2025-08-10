@@ -15,6 +15,7 @@ import {
 } from './schema';
 import { eq, and, or, desc, asc, lte, gte, sql } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
+import { encrypt, decrypt } from '../auth/encryption';
 
 // ============= User Management Queries =============
 
@@ -116,8 +117,8 @@ export async function addSocialAccount(accountData: NewSocialAccount) {
         const [updated] = await db
             .update(socialAccounts)
             .set({
-                accessToken: accountData.accessToken,
-                refreshToken: accountData.refreshToken,
+                accessToken: encrypt(accountData.accessToken),
+                refreshToken: accountData.refreshToken ? encrypt(accountData.refreshToken) : null,
                 tokenExpiresAt: accountData.tokenExpiresAt,
                 isActive: true,
                 updatedAt: new Date(),
@@ -130,7 +131,11 @@ export async function addSocialAccount(accountData: NewSocialAccount) {
 
     const [account] = await db
         .insert(socialAccounts)
-        .values(accountData)
+        .values({
+            ...accountData,
+            accessToken: encrypt(accountData.accessToken),
+            refreshToken: accountData.refreshToken ? encrypt(accountData.refreshToken) : null,
+        })
         .returning();
 
     return account;
@@ -145,8 +150,8 @@ export async function updateSocialAccountToken(
     const [updated] = await db
         .update(socialAccounts)
         .set({
-            accessToken,
-            refreshToken: refreshToken || undefined,
+            accessToken: encrypt(accessToken),
+            refreshToken: refreshToken ? encrypt(refreshToken) : undefined,
             tokenExpiresAt: expiresAt || undefined,
             updatedAt: new Date(),
         })
@@ -166,6 +171,23 @@ export async function getActiveAccountsForUser(userId: number) {
                 eq(socialAccounts.isActive, true)
             )
         );
+}
+
+export async function getDecryptedAccountTokens(accountId: number) {
+    const account = await db
+        .select()
+        .from(socialAccounts)
+        .where(eq(socialAccounts.id, accountId))
+        .limit(1);
+
+    if (account.length === 0) return null;
+
+    const accountData = account[0];
+    return {
+        ...accountData,
+        accessToken: decrypt(accountData.accessToken),
+        refreshToken: accountData.refreshToken ? decrypt(accountData.refreshToken) : null,
+    };
 }
 
 export async function getExpiringTokens(hoursBeforeExpiry: number = 24) {
