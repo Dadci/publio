@@ -6,6 +6,7 @@ import { pgTable, serial, text, timestamp, varchar, boolean, jsonb, integer, pgE
 export const platformEnum = pgEnum('platform', ['facebook', 'instagram', 'tiktok']);
 export const postStatusEnum = pgEnum('post_status', ['draft', 'scheduled', 'publishing', 'published', 'failed']);
 export const mediaTypeEnum = pgEnum('media_type', ['image', 'video', 'carousel', 'text_only']);
+export const userRoleEnum = pgEnum('user_role', ['admin', 'user']);
 
 // Users table remains similar but needs password for auth
 export const users = pgTable('users', {
@@ -13,6 +14,7 @@ export const users = pgTable('users', {
     email: varchar('email', { length: 255 }).notNull().unique(),
     name: varchar('name', { length: 255 }).notNull(),
     passwordHash: varchar('password_hash', { length: 255 }).notNull(), // Add this
+    role: userRoleEnum('role').default('user').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

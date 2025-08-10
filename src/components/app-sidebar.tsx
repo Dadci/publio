@@ -89,7 +89,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <Button
         asChild
-        className="w-auto justify-center mt-4 mx-4 font-bold"
+        className="w-auto justify-center mt-4 mx-4 font-bold bg-black"
         size="default"
       >
         <Link href="/dashboard/posts/new">
