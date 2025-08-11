@@ -1,20 +1,46 @@
 export default function SchedulePage() {
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 m-2 rounded-3xl bg-white space-y-4 p-4 md:p-4 md:pt-4">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Schedule</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Schedule</h2>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-4">
+      <div className="grid gap-4 ">
         {/* Calendar View */}
         <div className="lg:col-span-3">
           <div className="rounded-xl border bg-card text-card-foreground shadow">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-medium">January 2025</h3>
-                <div className="flex space-x-2">
-                  <div className="h-8 w-8 rounded bg-gray-100/50"></div>
-                  <div className="h-8 w-8 rounded bg-gray-100/50"></div>
+                <div className="flex items-center space-x-4">
+                  {/* Previous Month Button */}
+                  <div className="h-8 w-8 rounded bg-gray-100/50 border border-gray-200/50 flex items-center justify-center cursor-pointer hover:bg-gray-200/50 transition-colors">
+                    <span className="text-gray-500 text-sm">‹</span>
+                  </div>
+
+                  {/* Month/Year Display */}
+                  <h3 className="text-lg font-medium">January 2025</h3>
+
+                  {/* Next Month Button */}
+                  <div className="h-8 w-8 rounded bg-gray-100/50 border border-gray-200/50 flex items-center justify-center cursor-pointer hover:bg-gray-200/50 transition-colors">
+                    <span className="text-gray-500 text-sm">›</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  {/* Today Button */}
+                  <div className="h-8 px-4 rounded bg-blue-500/10 border border-blue-500/20 flex items-center justify-center cursor-pointer hover:bg-blue-500/20 transition-colors">
+                    <span className="text-blue-600 text-sm font-medium">
+                      Today
+                    </span>
+                  </div>
+
+                  {/* View Toggle Buttons */}
+                  <div className="h-8 w-8 rounded bg-gray-100/50 border border-gray-200/50 flex items-center justify-center cursor-pointer hover:bg-gray-200/50 transition-colors">
+                    <span className="text-gray-500 text-xs">W</span>
+                  </div>
+                  <div className="h-8 w-8 rounded bg-gray-100/50 border border-gray-200/50 flex items-center justify-center cursor-pointer hover:bg-gray-200/50 transition-colors">
+                    <span className="text-gray-500 text-xs">M</span>
+                  </div>
                 </div>
               </div>
 
@@ -64,95 +90,6 @@ export default function SchedulePage() {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Quick Stats */}
-          <div className="rounded-xl border bg-card text-card-foreground shadow">
-            <div className="p-6">
-              <h3 className="text-lg font-medium mb-4">This Month</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Scheduled</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="h-3 w-3 rounded bg-blue-500/30"></div>
-                    <span className="text-sm font-medium">23</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Published</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="h-3 w-3 rounded bg-green-500/30"></div>
-                    <span className="text-sm font-medium">89</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Failed</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="h-3 w-3 rounded bg-red-500/30"></div>
-                    <span className="text-sm font-medium">2</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Upcoming Posts */}
-          <div className="rounded-xl border bg-card text-card-foreground shadow">
-            <div className="p-6">
-              <h3 className="text-lg font-medium mb-4">Upcoming</h3>
-              <div className="space-y-3">
-                {[
-                  { time: "9:00 AM", platform: "facebook", color: "blue" },
-                  { time: "2:30 PM", platform: "instagram", color: "pink" },
-                  { time: "6:00 PM", platform: "tiktok", color: "black" },
-                ].map((post, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50/50"
-                  >
-                    <div
-                      className={`h-3 w-3 rounded bg-${post.color}-500/30`}
-                    ></div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">{post.time}</div>
-                      <div className="text-xs text-gray-500 capitalize">
-                        {post.platform}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Best Times */}
-          <div className="rounded-xl border bg-card text-card-foreground shadow">
-            <div className="p-6">
-              <h3 className="text-lg font-medium mb-4">Best Times</h3>
-              <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                  <div className="text-sm font-medium text-green-700">
-                    9:00 AM
-                  </div>
-                  <div className="text-xs text-green-600">High engagement</div>
-                </div>
-                <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                  <div className="text-sm font-medium text-orange-700">
-                    2:00 PM
-                  </div>
-                  <div className="text-xs text-orange-600">
-                    Medium engagement
-                  </div>
-                </div>
-                <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                  <div className="text-sm font-medium text-purple-700">
-                    7:00 PM
-                  </div>
-                  <div className="text-xs text-purple-600">Peak time</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

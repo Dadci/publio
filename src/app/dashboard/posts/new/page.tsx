@@ -1,13 +1,13 @@
 export default function NewPostPage() {
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 m-2 rounded-3xl bg-white space-y-4 p-4 md:p-4 pt-6">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Create New Post</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Create New Post</h2>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         {/* Main Content Area */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4">
           {/* Post Content */}
           <div className="rounded-xl border bg-card text-card-foreground shadow">
             <div className="p-6">
@@ -29,7 +29,7 @@ export default function NewPostPage() {
 
           {/* Media Upload */}
           <div className="rounded-xl border bg-card text-card-foreground shadow">
-            <div className="p-6">
+            <div className="p-4">
               <h3 className="text-lg font-medium mb-4">Media</h3>
               <div className="grid grid-cols-3 gap-4">
                 {[1, 2, 3].map((i) => (
@@ -46,7 +46,7 @@ export default function NewPostPage() {
 
           {/* Platform Selection */}
           <div className="rounded-xl border bg-card text-card-foreground shadow">
-            <div className="p-6">
+            <div className="p-4">
               <h3 className="text-lg font-medium mb-4">Platforms</h3>
               <div className="grid grid-cols-3 gap-4">
                 <div className="p-4 rounded-lg border bg-blue-500/10 border-blue-500/20">
@@ -67,12 +67,12 @@ export default function NewPostPage() {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Publishing Options */}
           <div className="rounded-xl border bg-card text-card-foreground shadow">
-            <div className="p-6">
+            <div className="p-4">
               <h3 className="text-lg font-medium mb-4">Publishing</h3>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="h-10 rounded bg-gray-100/50"></div>
                 <div className="h-10 rounded bg-gray-100/50"></div>
                 <div className="h-32 rounded bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
