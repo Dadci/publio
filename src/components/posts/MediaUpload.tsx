@@ -43,9 +43,12 @@ export default function MediaUpload({
   // Notify parent component when files change
   React.useEffect(() => {
     if (onFilesChange) {
-      onFilesChange(
-        files.map((f) => ({ id: f.id, file: f.file, preview: f.preview }))
-      );
+      const fileData = files.map((f) => ({
+        id: f.id,
+        file: f.file,
+        preview: f.preview,
+      }));
+      onFilesChange(fileData);
     }
   }, [files, onFilesChange]);
 

@@ -1,7 +1,7 @@
 // src/hooks/use-post-form.ts
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export interface PostFormData {
     content: string;
@@ -29,34 +29,38 @@ export const usePostForm = () => {
 
     const [errors, setErrors] = useState<FormErrors>({});
 
-    const updateContent = (content: string) => {
+    const updateContent = useCallback((content: string) => {
         setFormData(prev => ({ ...prev, content }));
         if (content.trim() && errors.content) {
             setErrors(prev => ({ ...prev, content: undefined }));
         }
-    };
+    }, [errors.content]);
 
-    const updateMediaType = (mediaType: PostFormData['mediaType']) => {
+    const updateMediaType = useCallback((mediaType: PostFormData['mediaType']) => {
         setFormData(prev => ({ ...prev, mediaType }));
-    };
+    }, []);
 
-    const updateMediaFiles = (mediaFiles: Array<{ id: string; file: File; preview: string }>) => {
-        setFormData(prev => ({ ...prev, mediaFiles }));
+    const updateMediaFiles = useCallback((mediaFiles: Array<{ id: string; file: File; preview: string }>) => {
+        setFormData(prev => {
+            const newData = { ...prev, mediaFiles };
 
-        // Auto-update media type based on files
-        if (mediaFiles.length > 1) {
-            setFormData(prev => ({ ...prev, mediaType: 'carousel' }));
-        } else if (mediaFiles.length === 1) {
-            const file = mediaFiles[0];
-            if (file.file.type.startsWith('image/')) {
-                setFormData(prev => ({ ...prev, mediaType: 'image' }));
-            } else if (file.file.type.startsWith('video/')) {
-                setFormData(prev => ({ ...prev, mediaType: 'video' }));
+            // Auto-update media type based on files
+            if (mediaFiles.length > 1) {
+                newData.mediaType = 'carousel';
+            } else if (mediaFiles.length === 1) {
+                const file = mediaFiles[0];
+                if (file.file.type.startsWith('image/')) {
+                    newData.mediaType = 'image';
+                } else if (file.file.type.startsWith('video/')) {
+                    newData.mediaType = 'video';
+                }
             }
-        }
-    };
 
-    const togglePlatform = (platform: string) => {
+            return newData;
+        });
+    }, []);
+
+    const togglePlatform = useCallback((platform: string) => {
         setFormData(prev => ({
             ...prev,
             selectedPlatforms: prev.selectedPlatforms.includes(platform)
@@ -66,16 +70,16 @@ export const usePostForm = () => {
         if (errors.platforms) {
             setErrors(prev => ({ ...prev, platforms: undefined }));
         }
-    };
+    }, [errors.platforms]);
 
-    const updateScheduledAt = (scheduledAt: string | null) => {
+    const updateScheduledAt = useCallback((scheduledAt: string | null) => {
         setFormData(prev => ({ ...prev, scheduledAt }));
         if (scheduledAt && errors.schedule) {
             setErrors(prev => ({ ...prev, schedule: undefined }));
         }
-    };
+    }, [errors.schedule]);
 
-    const resetForm = () => {
+    const resetForm = useCallback(() => {
         setFormData({
             content: '',
             mediaType: 'text_only',
@@ -84,9 +88,9 @@ export const usePostForm = () => {
             mediaFiles: [],
         });
         setErrors({});
-    };
+    }, []);
 
-    const validateForm = (): boolean => {
+    const validateForm = useCallback((): boolean => {
         const newErrors: FormErrors = {};
 
         // Content validation
@@ -116,11 +120,11 @@ export const usePostForm = () => {
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
-    };
+    }, [formData]);
 
-    const isValid = () => {
+    const isValid = useCallback(() => {
         return formData.content.trim().length > 0 && formData.selectedPlatforms.length > 0;
-    };
+    }, [formData.content, formData.selectedPlatforms]);
 
     return {
         formData,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { usePosts } from "@/hooks/use-posts";
 import { usePostForm } from "@/hooks/use-post-form";
 import MediaUpload from "@/components/posts/MediaUpload";
@@ -22,7 +22,7 @@ export default function NewPostPage() {
   } = usePostForm();
   const [success, setSuccess] = useState<string | null>(null);
 
-  const handleSaveDraft = async () => {
+  const handleSaveDraft = useCallback(async () => {
     if (!validateForm()) return;
     const result = await saveDraft({
       content: formData.content,
@@ -33,9 +33,15 @@ export default function NewPostPage() {
       resetForm();
       setTimeout(() => setSuccess(null), 3000);
     }
-  };
+  }, [
+    validateForm,
+    saveDraft,
+    formData.content,
+    formData.mediaType,
+    resetForm,
+  ]);
 
-  const handleSchedulePost = async () => {
+  const handleSchedulePost = useCallback(async () => {
     if (!validateForm() || !formData.scheduledAt) return;
     const result = await schedulePost({
       content: formData.content,
@@ -47,9 +53,16 @@ export default function NewPostPage() {
       resetForm();
       setTimeout(() => setSuccess(null), 3000);
     }
-  };
+  }, [
+    validateForm,
+    formData.scheduledAt,
+    schedulePost,
+    formData.content,
+    formData.mediaType,
+    resetForm,
+  ]);
 
-  const handlePublishNow = async () => {
+  const handlePublishNow = useCallback(async () => {
     if (!validateForm()) return;
     const result = await publishNow({
       content: formData.content,
@@ -60,7 +73,13 @@ export default function NewPostPage() {
       resetForm();
       setTimeout(() => setSuccess(null), 3000);
     }
-  };
+  }, [
+    validateForm,
+    publishNow,
+    formData.content,
+    formData.mediaType,
+    resetForm,
+  ]);
 
   return (
     <div className="flex-1 m-2 rounded-3xl bg-white space-y-4 p-4 md:p-4 pt-6">
@@ -86,7 +105,7 @@ export default function NewPostPage() {
           {/* Platform Selection */}
           <div className="rounded-xl border bg-card text-card-foreground shadow">
             <div className="p-4">
-              <h3 className="text-lg font-medium mb-4">Select Platforms</h3>
+              <h3 className="text-base font-medium mb-4">Select Platforms</h3>
               <div className="space-y-3">
                 <div className="flex flex-wrap gap-3">
                   {[
@@ -199,7 +218,9 @@ export default function NewPostPage() {
           {/* Media Upload */}
           <div className="rounded-xl border bg-card text-card-foreground shadow">
             <div className="p-4">
-              <h3 className="text-lg font-medium mb-4">Media Type & Upload</h3>
+              <h3 className="text-base font-medium mb-4">
+                Media Type & Upload
+              </h3>
               <div className="space-y-4">
                 <div className="flex flex-wrap gap-3">
                   {[
@@ -358,7 +379,7 @@ export default function NewPostPage() {
           {/* Post Content */}
           <div className="rounded-xl border bg-card text-card-foreground shadow">
             <div className="p-6">
-              <h3 className="text-lg font-medium mb-4">Post Content</h3>
+              <h3 className="text-base font-medium mb-4">Post Content</h3>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <textarea
@@ -402,7 +423,7 @@ export default function NewPostPage() {
           {/* Publishing Options */}
           <div className="rounded-xl border bg-card text-card-foreground shadow">
             <div className="p-4">
-              <h3 className="text-lg font-medium mb-4">Publishing</h3>
+              <h3 className="text-base font-medium mb-4">Publishing</h3>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <input

@@ -37,12 +37,30 @@ class EdgeRateLimiter {
             }
         }
     }
+
+    // Clear all entries (useful for development)
+    clear() {
+        this.store.clear();
+    }
 }
 
-// Create rate limiters
-const loginRateLimiter = new EdgeRateLimiter(5, 15 * 60 * 1000); // 5 requests per 15 minutes
-const apiRateLimiter = new EdgeRateLimiter(100, 60 * 1000); // 100 requests per minute
-const uploadRateLimiter = new EdgeRateLimiter(10, 60 * 1000); // 10 requests per minute
+// Create rate limiters - More permissive for development
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const loginRateLimiter = new EdgeRateLimiter(
+    isDevelopment ? 50 : 5,
+    isDevelopment ? 60 * 1000 : 15 * 60 * 1000
+); // Dev: 50 requests per minute, Prod: 5 requests per 15 minutes
+
+const apiRateLimiter = new EdgeRateLimiter(
+    isDevelopment ? 500 : 100,
+    60 * 1000
+); // Dev: 500 requests per minute, Prod: 100 requests per minute
+
+const uploadRateLimiter = new EdgeRateLimiter(
+    isDevelopment ? 50 : 10,
+    60 * 1000
+); // Dev: 50 requests per minute, Prod: 10 requests per minute
 
 function getRateLimitIdentifier(request: NextRequest): string {
     return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||

@@ -62,6 +62,13 @@ export const usePosts = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
+
+                // Handle authentication errors
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return null;
+                }
+
                 throw new Error(errorData.error || 'Failed to create post');
             }
 
@@ -97,6 +104,13 @@ export const usePosts = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
+
+                // Handle authentication errors
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return null;
+                }
+
                 throw new Error(errorData.error || 'Failed to fetch posts');
             }
 
