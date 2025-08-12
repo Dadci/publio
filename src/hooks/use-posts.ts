@@ -21,6 +21,26 @@ export interface Post {
     publishedAt: string | null;
     createdAt: string;
     updatedAt: string;
+    mediaFiles?: MediaFile[];
+    destinations?: Array<{
+        id: number;
+        platform: string;
+        socialAccountId: number;
+    }>;
+}
+
+export interface MediaFile {
+    id: number;
+    postId: number;
+    fileUrl: string;
+    fileType: string;
+    fileSize: number;
+    width: number | null;
+    height: number | null;
+    duration: number | null;
+    thumbnailUrl: string | null;
+    order: number;
+    createdAt: string;
 }
 
 export interface PostsResponse {

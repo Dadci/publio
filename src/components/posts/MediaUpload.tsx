@@ -20,12 +20,14 @@ interface MediaUploadProps {
   onFilesChange?: (files: UploadedFile[]) => void;
   maxFiles?: number;
   maxSizeMB?: number;
+  initialFiles?: UploadedFile[];
 }
 
 export default function MediaUpload({
   onFilesChange,
   maxFiles = 6,
   maxSizeMB = 5,
+  initialFiles = [],
 }: MediaUploadProps) {
   const maxSize = maxSizeMB * 1024 * 1024; // Convert MB to bytes
 
@@ -46,6 +48,13 @@ export default function MediaUpload({
     maxSize,
     multiple: true,
     maxFiles,
+    initialFiles: initialFiles.map((file) => ({
+      id: file.id,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      url: file.url,
+    })),
   });
 
   // Upload files to server and notify parent component when files change

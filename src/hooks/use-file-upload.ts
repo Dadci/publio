@@ -46,7 +46,8 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
             name: file.name,
             size: file.size,
             type: file.type,
-            url: file.url
+            url: file.url,
+            uploaded: true, // Mark initial files as already uploaded
         }))
     );
     const [isDragging, setIsDragging] = useState(false);

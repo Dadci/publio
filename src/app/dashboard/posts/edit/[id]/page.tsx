@@ -52,6 +52,18 @@ export default function EditPostPage({ params }: EditPostPageProps) {
         if (result?.success && result.post) {
           const post = result.post;
 
+          // Convert database media files to UploadedFile format
+          const convertedMediaFiles = post.mediaFiles
+            ? post.mediaFiles.map((mediaFile) => ({
+                id: mediaFile.id.toString(),
+                url: mediaFile.fileUrl,
+                type: mediaFile.fileType,
+                size: mediaFile.fileSize,
+                name: mediaFile.fileUrl.split("/").pop() || "Unknown file",
+                preview: mediaFile.fileUrl, // Use the file URL as preview
+              }))
+            : [];
+
           // Populate form with existing post data
           setFormData({
             content: post.content || "",
@@ -60,7 +72,7 @@ export default function EditPostPage({ params }: EditPostPageProps) {
             scheduledAt: post.scheduledAt
               ? new Date(post.scheduledAt).toISOString().slice(0, 16)
               : null,
-            mediaFiles: [], // You might want to fetch media files
+            mediaFiles: convertedMediaFiles,
           });
           setIsInitialized(true);
         } else {
@@ -420,6 +432,7 @@ export default function EditPostPage({ params }: EditPostPageProps) {
                       onFilesChange={updateMediaFiles}
                       maxFiles={formData.mediaType === "carousel" ? 6 : 1}
                       maxSizeMB={5}
+                      initialFiles={formData.mediaFiles}
                     />
                     {errors.media && (
                       <p className="text-red-500 text-xs">{errors.media}</p>
