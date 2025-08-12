@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { posts } from '@/lib/db/schema';
+import { posts, mediaFiles } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { requireAuth } from '@/lib/auth/middleware';
 
@@ -46,7 +46,6 @@ async function createPostHandler(request: NextRequest) {
         const user = (request as any).user;
         const body = await request.json();
 
-        // Basic validation
         if (!body.content || !body.mediaType) {
             return NextResponse.json(
                 { error: 'Content and media type are required' },
@@ -54,21 +53,53 @@ async function createPostHandler(request: NextRequest) {
             );
         }
 
-        // Create post
-        const newPost = await db
-            .insert(posts)
-            .values({
-                userId: user.userId,
-                content: body.content,
-                mediaType: body.mediaType,
-                status: body.status || 'draft',
-                scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
-            })
-            .returning();
+        // Start a transaction to ensure data consistency
+        const result = await db.transaction(async (tx) => {
+            // Create post
+            const newPost = await tx
+                .insert(posts)
+                .values({
+                    userId: user.userId,
+                    content: body.content,
+                    mediaType: body.mediaType,
+                    status: body.status || 'draft',
+                    scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
+                })
+                .returning();
+
+            const postId = newPost[0].id;
+
+            // Handle media files if they exist
+            if (body.mediaUrls && Array.isArray(body.mediaUrls) && body.mediaUrls.length > 0) {
+                const mediaFilePromises = body.mediaUrls.map(async (url: string, index: number) => {
+                    // Extract basic info from URL for now
+                    // In a real app, you might want to store more metadata during upload
+                    const fileExtension = url.split('.').pop()?.toLowerCase() || '';
+                    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension);
+                    const isVideo = ['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(fileExtension);
+
+                    return tx.insert(mediaFiles).values({
+                        postId: postId,
+                        fileUrl: url,
+                        fileType: isImage ? 'image/jpeg' : isVideo ? 'video/mp4' : 'application/octet-stream',
+                        fileSize: 0, // Default to 0 for now - could be populated during upload
+                        width: null,
+                        height: null,
+                        duration: null,
+                        thumbnailUrl: null,
+                        order: index,
+                    });
+                });
+
+                await Promise.all(mediaFilePromises);
+            }
+
+            return newPost[0];
+        });
 
         return NextResponse.json({
             success: true,
-            post: newPost[0],
+            post: result,
         });
     } catch (error) {
         console.error('Create post error:', error);

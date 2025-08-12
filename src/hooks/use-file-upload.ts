@@ -11,6 +11,8 @@ export interface FileWithPreview {
     size: number;
     type: string;
     url?: string;
+    uploaded?: boolean;
+    error?: string;
 }
 
 export interface UseFileUploadOptions {

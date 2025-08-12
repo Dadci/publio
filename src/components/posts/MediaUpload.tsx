@@ -6,10 +6,18 @@ import { AlertCircleIcon, ImageIcon, UploadIcon, XIcon } from "lucide-react";
 import { useFileUpload } from "@/hooks/use-file-upload";
 import { Button } from "@/components/ui/button";
 
+export interface UploadedFile {
+  id: string;
+  url: string;
+  type: string;
+  size: number;
+  name: string;
+  preview: string;
+  error?: string;
+}
+
 interface MediaUploadProps {
-  onFilesChange?: (
-    files: Array<{ id: string; file: File; preview: string }>
-  ) => void;
+  onFilesChange?: (files: UploadedFile[]) => void;
   maxFiles?: number;
   maxSizeMB?: number;
 }
@@ -40,15 +48,71 @@ export default function MediaUpload({
     maxFiles,
   });
 
-  // Notify parent component when files change
+  // Upload files to server and notify parent component when files change
   React.useEffect(() => {
     if (onFilesChange) {
-      const fileData = files.map((f) => ({
-        id: f.id,
-        file: f.file,
-        preview: f.preview,
-      }));
-      onFilesChange(fileData);
+      const uploadFiles = async () => {
+        const uploadedFiles = await Promise.all(
+          files.map(async (f) => {
+            // Check if file is already uploaded
+            if (f.uploaded && f.url) {
+              return {
+                id: f.id,
+                url: f.url,
+                type: f.file.type,
+                size: f.file.size,
+                name: f.file.name,
+                preview: f.preview,
+              };
+            }
+
+            try {
+              const formData = new FormData();
+              formData.append("file", f.file);
+
+              const response = await fetch("/api/upload", {
+                method: "POST",
+                body: formData,
+              });
+
+              if (!response.ok) {
+                throw new Error("Upload failed");
+              }
+
+              const result = await response.json();
+
+              // Mark file as uploaded in the useFileUpload hook
+              f.uploaded = true;
+              f.url = result.file.url;
+
+              return {
+                id: f.id,
+                url: result.file.url,
+                type: result.file.type,
+                size: result.file.size,
+                name: result.file.name,
+                preview: f.preview,
+              };
+            } catch (error) {
+              console.error("File upload failed:", error);
+              f.error = "Upload failed";
+              return {
+                id: f.id,
+                url: "", // Provide empty string for failed uploads
+                type: f.file.type,
+                size: f.file.size,
+                name: f.file.name,
+                preview: f.preview,
+                error: "Upload failed",
+              };
+            }
+          })
+        );
+
+        onFilesChange(uploadedFiles);
+      };
+
+      uploadFiles();
     }
   }, [files, onFilesChange]);
 

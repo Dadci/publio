@@ -8,6 +8,7 @@ export interface CreatePostData {
     mediaType: 'image' | 'video' | 'carousel' | 'text_only';
     status?: 'draft' | 'scheduled' | 'published';
     scheduledAt?: string | null;
+    mediaUrls?: string[];
 }
 
 export interface Post {
@@ -57,6 +58,7 @@ export const usePosts = () => {
                     mediaType: postData.mediaType,
                     status: postData.status || 'draft',
                     scheduledAt: postData.scheduledAt,
+                    mediaUrls: postData.mediaUrls,
                 }),
             });
 
@@ -151,6 +153,114 @@ export const usePosts = () => {
         });
     };
 
+    const updatePost = async (postId: number, postData: CreatePostData): Promise<CreatePostResponse | null> => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`/api/posts/${postId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    content: postData.content,
+                    mediaType: postData.mediaType,
+                    status: postData.status || 'draft',
+                    scheduledAt: postData.scheduledAt,
+                    mediaUrls: postData.mediaUrls,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return null;
+                }
+
+                throw new Error(errorData.error || 'Failed to update post');
+            }
+
+            const result: CreatePostResponse = await response.json();
+            return result;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            setError(errorMessage);
+            console.error('Update post error:', err);
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const deletePost = async (postId: number): Promise<boolean> => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`/api/posts/${postId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return false;
+                }
+
+                throw new Error(errorData.error || 'Failed to delete post');
+            }
+
+            return true;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            setError(errorMessage);
+            console.error('Delete post error:', err);
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getPost = async (postId: number): Promise<{ success: boolean; post?: Post } | null> => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`/api/posts/${postId}`, {
+                method: 'GET',
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return null;
+                }
+
+                throw new Error(errorData.error || 'Failed to fetch post');
+            }
+
+            const result = await response.json();
+            return result;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+            setError(errorMessage);
+            console.error('Get post error:', err);
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         // State
         loading,
@@ -159,6 +269,9 @@ export const usePosts = () => {
         // Methods
         createPost,
         getPosts,
+        getPost,
+        updatePost,
+        deletePost,
         saveDraft,
         schedulePost,
         publishNow,

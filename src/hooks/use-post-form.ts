@@ -2,13 +2,14 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { UploadedFile } from '@/components/posts/MediaUpload';
 
 export interface PostFormData {
     content: string;
     mediaType: 'image' | 'video' | 'carousel' | 'text_only';
     selectedPlatforms: string[];
     scheduledAt: string | null;
-    mediaFiles: Array<{ id: string; file: File; preview: string }>;
+    mediaFiles: UploadedFile[];
 }
 
 export interface FormErrors {
@@ -40,7 +41,7 @@ export const usePostForm = () => {
         setFormData(prev => ({ ...prev, mediaType }));
     }, []);
 
-    const updateMediaFiles = useCallback((mediaFiles: Array<{ id: string; file: File; preview: string }>) => {
+    const updateMediaFiles = useCallback((mediaFiles: UploadedFile[]) => {
         setFormData(prev => {
             const newData = { ...prev, mediaFiles };
 
@@ -49,9 +50,9 @@ export const usePostForm = () => {
                 newData.mediaType = 'carousel';
             } else if (mediaFiles.length === 1) {
                 const file = mediaFiles[0];
-                if (file.file.type.startsWith('image/')) {
+                if (file.type.startsWith('image/')) {
                     newData.mediaType = 'image';
-                } else if (file.file.type.startsWith('video/')) {
+                } else if (file.type.startsWith('video/')) {
                     newData.mediaType = 'video';
                 }
             }
@@ -137,5 +138,6 @@ export const usePostForm = () => {
         resetForm,
         validateForm,
         isValid,
+        setFormData,
     };
 };
